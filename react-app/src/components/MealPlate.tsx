@@ -10,8 +10,11 @@ interface Props {
 }
 
 /**
- * 菜品成品图：优先用 AI 生成的 `/dishes/m<id>.png`；
+ * 菜品成品图：加载 AI 生成的 `/dishes/m<id>.webp`（白底原图，768px）；
  * 图缺失或加载失败时，回退到 DishBowl 按食材实时合成。
+ *
+ * 说明：早期版本用的是去背透明图，但纯白碗沿与白背景太接近，u2net 会把碗沿
+ * 啃掉一块。白底原图既避免了这个问题，也和站内的白色卡片背景自然融合。
  */
 export default function MealPlate({ mealId, items, className = '', alt = '' }: Props) {
   const [failed, setFailed] = useState(false);
