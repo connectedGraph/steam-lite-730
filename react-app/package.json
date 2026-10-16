@@ -2,6 +2,14 @@
   "name": "steam-lite-730-app",
   "private": true,
   "version": "1.0.0",
+  "description": "365 天 730 道中式蒸煮低油健康餐查看器 | 730 Chinese steamed low-oil meals viewer",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/connectedGraph/steam-lite-730.git",
+    "directory": "react-app"
+  },
+  "homepage": "https://fit.6767.chat/",
   "type": "module",
   "scripts": {
     "dev": "vite",
