@@ -1,0 +1,21 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# 编辑器 / 系统
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# 日志
+*.log
+npm-debug.log*
+
+# 本地手动备份（改大文件时生成）
+*.bak
+*.bak-*
+*.bak_*

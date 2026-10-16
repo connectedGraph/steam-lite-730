@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>365天730道健康餐 · 浏览器</title>
+<style>
+  :root{
+    --bg:#f6f7f4; --card:#fff; --ink:#1f2421; --muted:#6b756e;
+    --line:#e3e7e1; --accent:#2f7d4f; --accent-soft:#e8f3ec; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.6 -apple-system,"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--ink)}
+  header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--line);padding:12px 20px}
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .brand h1{font-size:18px;margin:0;letter-spacing:.5px}
+  .brand .sub{color:var(--muted);font-size:12.5px}
+  nav{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  nav button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+             padding:5px 14px;cursor:pointer;font-size:13.5px}
+  nav button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  main{max-width:1180px;margin:0 auto;padding:20px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .toolbar input,.toolbar select{border:1px solid var(--line);border-radius:9px;padding:8px 11px;
+       font-size:14px;background:#fff;color:var(--ink)}
+  .toolbar input[type=search]{flex:1;min-width:220px}
+  .count{color:var(--muted);font-size:13px;margin-left:auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+        display:flex;flex-direction:column;gap:8px}
+  .card .plate{width:100%;height:150px;display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(160deg,#fbfcfa,#eef3ee);border-radius:10px;overflow:hidden}
+  .card .plate img{max-width:100%;max-height:100%;object-fit:contain}
+  .card .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .ing-ico{width:34px;height:34px;object-fit:contain;vertical-align:middle;margin-right:8px;background:#f6f7f4;border-radius:7px;padding:2px}
+  .card h3{margin:0;font-size:15.5px;line-height:1.4}
+  .tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;
+       background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+  .tag.gray{background:#f0f1ef;color:var(--muted)}
+  .macro{display:flex;gap:12px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+  .macro b{color:var(--ink);font-weight:600}
+  .ings{font-size:13px;color:var(--muted)}
+  .steps{font-size:13px;border-top:1px dashed var(--line);padding-top:8px;color:#37403a}
+  .kv{font-size:12.5px;color:var(--muted)}
+  .kv b{color:var(--ink);font-weight:600}
+  .day{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .day h3{margin:0 0 8px;font-size:15px}
+  .meals{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:700px){.meals{grid-template-columns:1fr}}
+  .mini{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .mini .t{font-weight:600;font-size:14px;margin-bottom:4px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+        border-radius:12px;overflow:hidden;font-size:13.5px}
+  th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#fafbf9;font-weight:600;color:var(--muted);position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .guideline{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:10px}
+  .guideline .topic{font-weight:600;color:var(--accent);font-size:13px}
+  .empty{color:var(--muted);padding:40px;text-align:center}
+  a.src{color:var(--accent);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>365 天 · 730 道中式蒸煮低油健康餐</h1>
+    <span class="sub" id="stat"></span>
+  </div>
+  <nav id="nav">
+    <button data-tab="meals" class="on">餐食</button>
+    <button data-tab="days">每日营养</button>
+    <button data-tab="ingredients">食材库</button>
+    <button data-tab="shopping">采购清单</button>
+    <button data-tab="guide">饮食原则</button>
+  </nav>
+</header>
+<main>
+  <div class="toolbar" id="toolbar"></div>
+  <div id="view"></div>
+</main>
+
+<script>
+let DB=null, tab="meals";
+
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,attrs={},...kids)=>{const n=document.createElement(t);
+  for(const[k,v]of Object.entries(attrs)){if(k==="class")n.className=v;else if(k==="html")n.innerHTML=v;else n.setAttribute(k,v);}
+  for(const k of kids) if(k!=null) n.append(k);return n;};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function boot(){
+  const r=await fetch("/api/data"); DB=await r.json();
+  const uniq=(a)=>[...new Set(a)];
+  DB._cats=uniq(DB.meals.map(m=>m.main_category)).sort();
+  DB._types=uniq(DB.meals.map(m=>m.meal_type));
+  DB._ingcats=uniq(DB.ingredients.map(i=>i.category)).sort();
+  DB._weeks=uniq(DB.meals.map(m=>m.week_number)).sort((a,b)=>a-b);
+  $("#stat").textContent=`${DB.meals.length} 道餐 · ${DB.ingredients.length} 种食材 · ${DB.daily_summaries.length} 天 · ${DB.weekly_shopping_items.length} 条采购项`;
+  $("#nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    tab=b.dataset.tab;[...$("#nav").children].forEach(x=>x.classList.toggle("on",x===b));render();};
+  render();
+}
+
+function render(){
+  const tb=$("#toolbar"), v=$("#view"); tb.innerHTML=""; v.innerHTML="";
+  if(tab==="meals") renderMeals(tb,v);
+  else if(tab==="days") renderDays(tb,v);
+  else if(tab==="ingredients") renderIngredients(tb,v);
+  else if(tab==="shopping") renderShopping(tb,v);
+  else renderGuide(tb,v);
+}
+
+/* ---------- 餐食 ---------- */
+function renderMeals(tb,v){
+  const q=el("input",{type:"search",placeholder:"搜索菜名 / 食材 / 主食…"});
+  const cat=el("select"); cat.append(el("option",{value:""},"全部分类"));
+  DB._cats.forEach(c=>cat.append(el("option",{value:c},c)));
+  const mt=el("select"); mt.append(el("option",{value:""},"全部餐次"));
+  DB._types.forEach(c=>mt.append(el("option",{value:c},c)));
+  const wk=el("select"); wk.append(el("option",{value:""},"全部周"));
+  DB._weeks.forEach(w=>wk.append(el("option",{value:w},`第 ${w} 周`)));
+  const cnt=el("span",{class:"count"});
+  tb.append(q,cat,mt,wk,cnt);
+
+  const grid=el("div",{class:"grid"});
+  v.append(grid);
+
+  const draw=()=>{
+    const s=q.value.trim().toLowerCase();
+    const list=DB.meals.filter(m=>
+      (!cat.value||m.main_category===cat.value)&&
+      (!mt.value||m.meal_type===mt.value)&&
+      (!wk.value||String(m.week_number)===wk.value)&&
+      (!s||[m.title,m.ingredients_summary,m.staple_food,m.cooking_method,m.seasoning]
+            .some(x=>(x||"").toLowerCase().includes(s))));
+    cnt.textContent=`${list.length} / ${DB.meals.length} 道`;
+    grid.innerHTML="";
+    if(!list.length){grid.append(el("div",{class:"empty"},"没有匹配的餐食"));return;}
+    list.slice(0,400).forEach(m=>grid.append(mealCard(m)));
+    if(list.length>400) grid.append(el("div",{class:"empty"},"仅显示前 400 条，请继续筛选…"));
+  };
+  [q,cat,mt,wk].forEach(x=>x.addEventListener("input",draw));
+  draw();
+}
+
+function mealCard(m){
+  const c=el("div",{class:"card"});
+  if(m.plate_asset_png){
+    const p=el("div",{class:"plate"});
+    p.append(el("img",{src:"/assets/plates/"+m.plate_asset_png,alt:m.title,loading:"lazy",
+      onerror:"this.parentNode.style.display='none'"}));
+    c.append(p);
+  }
+  c.append(el("div",{class:"top"},
+    el("h3",{} , m.title),
+    el("span",{class:"tag"},m.main_category)));
+  c.append(el("div",{class:"macro"},
+    el("span",{html:`热量 <b>${m.calories_kcal}</b> kcal`}),
+    el("span",{html:`蛋白 <b>${m.protein_g}</b> g`}),
+    el("span",{html:`碳水 <b>${m.carbs_g}</b> g`}),
+    el("span",{html:`脂肪 <b>${m.fat_g}</b> g`})));
+  c.append(el("div",{class:"kv",html:
+    `<b>第 ${m.day_number} 天 / 第 ${m.week_number} 周</b> · ${m.meal_type} · ${m.cooking_method||"—"} · 约 ${m.prep_minutes||"?"} 分钟`}));
+  c.append(el("div",{class:"ings"},m.ingredients_summary||""));
+  if(m.staple_food) c.append(el("div",{class:"kv",html:`主食：<b>${esc(m.staple_food)}</b>`}));
+  if(m.seasoning) c.append(el("div",{class:"kv",html:`调味：${esc(m.seasoning)}`}));
+  if(m.steps) c.append(el("div",{class:"steps"},m.steps));
+  if(m.low_carb_tip) c.append(el("div",{class:"kv",html:`💡 ${esc(m.low_carb_tip)}`}));
+  if(m.reminder) c.append(el("div",{class:"kv",html:`⚠️ ${esc(m.reminder)}`}));
+  return c;
+}
+
+/* ---------- 每日营养 ---------- */
+function renderDays(tb,v){
+  const wk=el("select"); wk.append(el("option",{value:""},"全部周"));
+  DB._weeks.forEach(w=>wk.append(el("option",{value:w},`第 ${w} 周`)));
+  const cnt=el("span",{class:"count"});
+  tb.append(wk,cnt);
+  const wrap=el("div"); v.append(wrap);
+  const draw=()=>{
+    const list=DB.daily_summaries.filter(d=>!wk.value||String(d.week_number)===wk.value);
+    cnt.textContent=`${list.length} 天`;
+    wrap.innerHTML="";
+    list.forEach(d=>{
+      const box=el("div",{class:"day"});
+      box.append(el("h3",{},`第 ${d.day_number} 天（第 ${d.week_number} 周）· 合计 ${d.total_kcal} kcal`));
+      box.append(el("div",{class:"macro"},
+        el("span",{html:`蛋白 <b>${d.total_protein_g}</b> g`}),
+        el("span",{html:`碳水 <b>${d.total_carbs_g}</b> g`}),
+        el("span",{html:`脂肪 <b>${d.total_fat_g}</b> g`}),
+        el("span",{html:`蔬菜 <b>${d.total_veggies_g}</b> g`})));
+      const meals=el("div",{class:"meals"});
+      meals.append(el("div",{class:"mini"},
+        el("div",{class:"t"},`午餐 · ${d.lunch_kcal} kcal`), el("div",{class:"ings"},d.lunch_title||"")));
+      meals.append(el("div",{class:"mini"},
+        el("div",{class:"t"},`晚餐 · ${d.dinner_kcal} kcal`), el("div",{class:"ings"},d.dinner_title||"")));
+      box.append(meals);
+      if(d.note) box.append(el("div",{class:"kv",html:`<br>注：${esc(d.note)}`}));
+      wrap.append(box);
+    });
+  };
+  wk.addEventListener("input",draw); draw();
+}
+
+/* ---------- 食材库 ---------- */
+function renderIngredients(tb,v){
+  const q=el("input",{type:"search",placeholder:"搜索食材…"});
+  const cat=el("select"); cat.append(el("option",{value:""},"全部分类"));
+  DB._ingcats.forEach(c=>cat.append(el("option",{value:c},c)));
+  const cnt=el("span",{class:"count"});
+  tb.append(q,cat,cnt);
+  const table=el("table"); const wrap=el("div"); wrap.append(table); v.append(wrap);
+  const draw=()=>{
+    const s=q.value.trim().toLowerCase();
+    const list=DB.ingredients.filter(i=>
+      (!cat.value||i.category===cat.value)&&
+      (!s||(i.name||"").toLowerCase().includes(s)));
+    cnt.textContent=`${list.length} 种`;
+    table.innerHTML=`<thead><tr><th>名称</th><th>分类</th><th class="num">kcal/100g</th>
+      <th class="num">蛋白</th><th class="num">碳水</th><th class="num">脂肪</th><th>基准</th></tr></thead>`;
+    const tb2=el("tbody");
+    list.forEach(i=>{
+      const nameTd=el("td");
+      if(i.asset_png) nameTd.append(el("img",{class:"ing-ico",src:"/assets/ingredients/"+i.asset_png,alt:i.name,loading:"lazy"}));
+      nameTd.append(document.createTextNode(i.name));
+      tb2.append(el("tr",{},
+      nameTd, el("td",{},i.category),
+      el("td",{class:"num"},i.kcal_per_100g), el("td",{class:"num"},i.protein_per_100g),
+      el("td",{class:"num"},i.carbs_per_100g), el("td",{class:"num"},i.fat_per_100g),
+      el("td",{},i.weight_basis||"")));
+    });
+    table.append(tb2);
+  };
+  [q,cat].forEach(x=>x.addEventListener("input",draw)); draw();
+}
+
+/* ---------- 采购清单 ---------- */
+function renderShopping(tb,v){
+  const wk=el("select"); DB._weeks.forEach(w=>wk.append(el("option",{value:w},`第 ${w} 周`)));
+  const cnt=el("span",{class:"count"});
+  tb.append(wk,cnt);
+  const table=el("table"); const wrap=el("div"); wrap.append(table); v.append(wrap);
+  const draw=()=>{
+    const list=DB.weekly_shopping_items.filter(i=>String(i.week_number)===wk.value);
+    cnt.textContent=`第 ${wk.value} 周 · ${list.length} 项`;
+    table.innerHTML=`<thead><tr><th>分类</th><th>食材</th><th class="num">菜单用量 g</th>
+      <th class="num">建议采购 g</th><th>采购形态</th><th>备注</th></tr></thead>`;
+    const tb2=el("tbody");
+    list.forEach(i=>tb2.append(el("tr",{},
+      el("td",{},i.ingredient_category), el("td",{},i.ingredient_name),
+      el("td",{class:"num"},i.planned_menu_weight_g), el("td",{class:"num"},i.estimated_purchase_weight_g),
+      el("td",{},i.purchase_form||""), el("td",{},i.note||""))));
+    table.append(tb2);
+  };
+  wk.addEventListener("input",draw); draw();
+}
+
+/* ---------- 饮食原则 ---------- */
+function renderGuide(tb,v){
+  DB.dietary_guidelines.forEach(g=>{
+    const box=el("div",{class:"guideline"});
+    box.append(el("div",{class:"topic"},g.topic));
+    box.append(el("div",{},g.rule_content));
+    if(g.source_url) box.append(el("a",{class:"src",href:g.source_url,target:"_blank"},g.source_url));
+    v.append(box);
+  });
+}
+
+boot().catch(e=>{$("#view").innerHTML=`<div class="empty">加载失败：${esc(e.message)}</div>`;});
+</script>
+</body>
+</html>
