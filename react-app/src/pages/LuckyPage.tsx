@@ -158,6 +158,7 @@ export default function LuckyPage({
 
     const final = pool[Math.floor(Math.random() * pool.length)];
     const preload = new Image();
+    preload.fetchPriority = 'high';
     preload.src = dishImage(final);
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
