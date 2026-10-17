@@ -1,6 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
-import { ArrowUpRight, CheckCircle2, Dices, Leaf, Search, ShoppingBag } from 'lucide-react';
-import { resolveAsset } from '../assets/assetMap';
+import { ArrowUpRight, CheckCircle2, Dices, Leaf, Search, ShoppingBag, Soup } from 'lucide-react';
 import { cx } from '../lib/utils';
 
 export type TabId = 'lucky' | 'meals' | 'atlas' | 'shop';
@@ -17,11 +16,11 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
     <div className="flex items-center gap-3">
       <div
         className={cx(
-          'grid shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#fbf7ec] to-[#e3ddc9] ring-1 ring-line',
+          'grid shrink-0 place-items-center rounded-full bg-forest text-[#f6f1e4] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-forest/20',
           compact ? 'h-9 w-9' : 'h-11 w-11',
         )}
       >
-        <img src={resolveAsset('plate_pork.png')} alt="" className={compact ? 'h-7 w-7' : 'h-9 w-9'} />
+        <Soup size={compact ? 16 : 19} strokeWidth={1.6} />
       </div>
       <div className="leading-tight">
         <div className={cx('font-display font-semibold tracking-wide text-forest-deep', compact ? 'text-[15px]' : 'text-[18px]')}>
