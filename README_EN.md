@@ -16,9 +16,9 @@ A complete, self-contained healthy meal project with two parts:
 - **Dataset** — 365 days × 2 meals = 730 Chinese steamed/boiled low-oil recipes, with full
   nutrition data for 77 ingredients, 3,853 ingredient-to-meal mappings, 365 daily nutrition
   summaries, 53 weeks of shopping lists, and 13 dietary guidelines.
-- **Viewer** — a Vite + React + TypeScript single-page app, mobile-first. Search and filter
-  recipes, adjust portion weights, draw a random meal, and auto-generate a shopping list from
-  the meals you pick.
+- **Viewer** — a Vite + React + TypeScript single-page app with a desktop sidebar and a
+  mobile bottom nav. Search and filter recipes, adjust portion weights, draw a random meal,
+  and auto-generate a shopping list from the meals you pick.
 
 ## Features
 
@@ -53,11 +53,11 @@ npm run build      # static output in dist/, ready to host
 ```
 .
 ├── react-app/                 # React viewer
-│   ├── src/App.tsx            # main app (4 tabs)
-│   ├── src/components/
-│   │   ├── MealPlate.tsx      # dish photo (AI-generated, falls back on error)
-│   │   └── DishBowl.tsx       # top-down bowl composed from ingredients (fallback)
-│   ├── src/assets/            # 69 transparent ingredient cutouts (bundled)
+│   ├── src/App.tsx            # state orchestration (draw / filters / menu / modal)
+│   ├── src/data/db.ts         # 730 meals + 77 ingredients + shopping aggregation
+│   ├── src/pages/             # draw / recipes / atlas / my-menu pages
+│   ├── src/components/        # responsive shell, dish card, detail sheet, plate image
+│   ├── src/assets/            # 75 transparent ingredient cutouts (320px WebP, bundled)
 │   └── public/dishes/         # 730 dish photos (WebP, lazy-loaded)
 ├── data/                      # JSON export + original Excel
 ├── database/                  # SQL schema + prebuilt SQLite

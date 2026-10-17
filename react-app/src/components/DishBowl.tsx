@@ -1,5 +1,5 @@
 import { resolveAsset } from '../assets/assetMap';
-import type { MealIngredientItem } from '../App';
+import type { MealIngredientItem } from '../data/db';
 
 type Slot = 'protein' | 'veg' | 'staple' | 'oil';
 

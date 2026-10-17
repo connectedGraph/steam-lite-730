@@ -1,8 +1,9 @@
-// Vite 静态资源映射：构建时自动收集 assets/ingredients/ 下的全部透明 PNG。
-// 由 food-cutout-toolkit 产出（512x512 RGBA，AI 生成 / 去背）。
+// Vite 静态资源映射：构建时自动收集 assets/ingredients/ 下的全部透明 WebP。
+// 由 food-cutout-toolkit 的 512px PNG 原图批量缩到 320px WebP（约 15KB/张），
+// 站内最大显示约 180px，320px 足够覆盖 2x 屏，同时把图鉴首屏体积从 ~19MB 降到 ~1MB。
 import { INGREDIENT_KEY_BY_ID } from './ingredientAssetMap';
 
-const modules = import.meta.glob('./ingredients/*.png', {
+const modules = import.meta.glob('./ingredients/*.webp', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -14,7 +15,7 @@ for (const [path, url] of Object.entries(modules)) {
   ASSETS[name] = url;
 }
 
-// 旧素材名 -> 新概念键（历史 App.tsx 中硬编码的素材名）
+// 旧素材名 -> 新概念键（历史数据里硬编码的素材名）
 const LEGACY_KEY: Record<string, string> = {
   chicken: 'chicken_breast',
   cod: 'fish_white',
@@ -22,24 +23,25 @@ const LEGACY_KEY: Record<string, string> = {
   purple_yam: 'purple_potato',
 };
 
-const FALLBACK = 'cut_broccoli.png';
+const FALLBACK = 'cut_broccoli.webp';
 
-/** 把 App 里使用的素材名解析为 Vite 静态资源 URL。 */
+/** 把数据里的素材名（可能是 .png 结尾）解析为 Vite 静态资源 URL。 */
 export function resolveAsset(name: string): string {
   if (!name) return ASSETS[FALLBACK] || '';
   let candidate = name;
+  const bare = name.replace(/\.(png|webp)$/, '');
 
-  if (name.startsWith('plate_')) {
-    // plate_beef.png -> cut_plate_beef.png
-    candidate = `cut_${name}`;
-  } else if (name.startsWith('cut_')) {
-    const key = name.slice(4).replace(/\.png$/, '');
-    candidate = `cut_${LEGACY_KEY[key] || key}.png`;
+  if (bare.startsWith('plate_')) {
+    // plate_beef -> cut_plate_beef.webp
+    candidate = `cut_${bare}.webp`;
+  } else if (bare.startsWith('cut_')) {
+    const key = bare.slice(4);
+    candidate = `cut_${LEGACY_KEY[key] || key}.webp`;
   }
 
   if (!ASSETS[candidate]) {
-    const key = name.replace(/^cut_/, '').replace(/^plate_/, '').replace(/\.png$/, '');
-    candidate = `cut_${LEGACY_KEY[key] || key}.png`;
+    const key = bare.replace(/^cut_/, '').replace(/^plate_/, '');
+    candidate = `cut_${LEGACY_KEY[key] || key}.webp`;
   }
 
   return ASSETS[candidate] || ASSETS[FALLBACK] || '';
@@ -48,7 +50,7 @@ export function resolveAsset(name: string): string {
 /** 按食材 id 取素材 URL（77 种食材各自使用自己的透明图）。 */
 export function ingredientAssetById(id: number): string {
   const key = INGREDIENT_KEY_BY_ID[id];
-  return key ? ASSETS[`cut_${key}.png`] || ASSETS[FALLBACK] || '' : ASSETS[FALLBACK] || '';
+  return key ? ASSETS[`cut_${key}.webp`] || ASSETS[FALLBACK] || '' : ASSETS[FALLBACK] || '';
 }
 
 export { ASSETS };
