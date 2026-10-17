@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, Dices, Loader2, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, Dices, Loader2, Plus, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { resolveAsset } from '../assets/assetMap';
 import MealPlate from '../components/MealPlate';
 import { Button, Chip, Hairline, PageHeader, Segmented } from '../components/ui';
@@ -25,6 +25,14 @@ const REEL_LENGTH = 34;
 const REEL_DURATION = 2300;
 
 const dishImage = (meal: MealRow) => `${import.meta.env.BASE_URL}dishes/m${meal.id}.webp`;
+
+// 轮播卡的网络图加载前的占位配色，慢网下也不出现空白卡
+const CARD_TINTS = [
+  'from-[#f6eadd] to-[#eed6c3]',
+  'from-[#eaf1e4] to-[#d8e6d1]',
+  'from-[#f5efdf] to-[#e9ddc3]',
+  'from-[#e9eef0] to-[#d8e3e8]',
+];
 
 export default function LuckyPage({
   luckyType,
@@ -254,13 +262,21 @@ export default function LuckyPage({
                       data-final={index === REEL_FINAL_INDEX ? 'true' : undefined}
                       className="relative grid aspect-square h-[82%] shrink-0 place-items-center overflow-hidden rounded-[20px] border border-line/80 bg-gradient-to-b from-white to-[#faf6ea] p-1.5 shadow-[0_10px_24px_-18px_rgba(28,42,34,0.4)]"
                     >
-                      {/* 图片未就绪时的淡餐盘剪影，避免冷启动看到空白卡 */}
-                      <img
-                        src={resolveAsset('plate_poultry.png')}
-                        alt=""
+                      {/* 图片未就绪时先显示一张菜单卡，避免冷启动看到空白 */}
+                      <div
+                        className={`absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gradient-to-br p-3 text-center ${CARD_TINTS[index % CARD_TINTS.length]}`}
                         aria-hidden
-                        className="pointer-events-none absolute inset-0 m-auto h-[62%] w-[62%] object-contain opacity-[0.13] grayscale"
-                      />
+                      >
+                        <span className="grid h-12 w-12 place-items-center rounded-full border border-white/70 bg-white/35 text-forest-deep/55">
+                          <UtensilsCrossed size={19} strokeWidth={1.5} />
+                        </span>
+                        <p className="font-display line-clamp-3 text-[12.5px] font-semibold leading-snug text-forest-deep/85">
+                          {item.title}
+                        </p>
+                        <span className="eyebrow !text-[8px] !tracking-[0.14em] !text-forest-deep/40">
+                          {item.mainCategory}
+                        </span>
+                      </div>
                       <MealPlate
                         mealId={item.id}
                         items={item.items}
