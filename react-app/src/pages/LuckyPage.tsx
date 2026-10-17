@@ -56,14 +56,14 @@ export default function LuckyPage({
     const timer = window.setTimeout(() => {
       const pool = poolFor();
       const picks: MealRow[] = [];
-      for (let i = 0; i < Math.min(10, pool.length); i++) {
+      for (let i = 0; i < Math.min(12, pool.length); i++) {
         const pick = pool[Math.floor(Math.random() * pool.length)];
         picks.push(pick);
         const img = new Image();
         img.src = dishImage(pick);
       }
       warmDeck.current = picks;
-    }, 900);
+    }, 200);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [luckyType]);
@@ -164,7 +164,7 @@ export default function LuckyPage({
     // 保证轮播用的图都已经预热过；点得太快时当场补一批
     let deck = warmDeck.current;
     if (deck.length < 6) {
-      deck = Array.from({ length: 10 }, () => pool[Math.floor(Math.random() * pool.length)]);
+      deck = Array.from({ length: 12 }, () => pool[Math.floor(Math.random() * pool.length)]);
       warmDeck.current = deck;
       deck.forEach((item) => {
         const img = new Image();
@@ -252,14 +252,22 @@ export default function LuckyPage({
                     <div
                       key={`${item.id}-${index}`}
                       data-final={index === REEL_FINAL_INDEX ? 'true' : undefined}
-                      className="grid aspect-square h-[82%] shrink-0 place-items-center overflow-hidden rounded-[20px] border border-line/80 bg-white p-1.5 shadow-[0_10px_24px_-18px_rgba(28,42,34,0.4)]"
+                      className="relative grid aspect-square h-[82%] shrink-0 place-items-center overflow-hidden rounded-[20px] border border-line/80 bg-gradient-to-b from-white to-[#faf6ea] p-1.5 shadow-[0_10px_24px_-18px_rgba(28,42,34,0.4)]"
                     >
+                      {/* 图片未就绪时的淡餐盘剪影，避免冷启动看到空白卡 */}
+                      <img
+                        src={resolveAsset('plate_poultry.png')}
+                        alt=""
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 m-auto h-[62%] w-[62%] object-contain opacity-[0.13] grayscale"
+                      />
                       <MealPlate
                         mealId={item.id}
                         items={item.items}
                         alt=""
                         eager
-                        className="h-full w-full"
+                        showSkeleton={false}
+                        className="relative h-full w-full"
                       />
                     </div>
                   ))}
